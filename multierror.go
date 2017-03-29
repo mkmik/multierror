@@ -15,7 +15,7 @@ func (e *Error) Error() string {
 
 	fmt.Fprintf(buf, "%d error(s) occurred:", len(e.errs))
 	for _, err := range e.errs {
-		fmt.Fprintf(buf, "\n%s", err)
+		fmt.Fprintf(buf, "\n%v", err)
 	}
 	return buf.String()
 }
