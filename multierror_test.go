@@ -13,13 +13,12 @@ func TestAppend(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := err.Error(), `1 error(s) occurred:
-an error`; got != want {
+	if got, want := err.Error(), `an error`; got != want {
 		t.Errorf("got: %q, want: %q", got, want)
 	}
 
 	err = Append(err, errors.Errorf("another error"))
-	if got, want := err.Error(), `2 error(s) occurred:
+	if got, want := err.Error(), `2 errors occurred:
 an error
 another error`; got != want {
 		t.Errorf("got: %q, want: %q", got, want)
@@ -31,10 +30,17 @@ another error`; got != want {
 		t.Fatal(err)
 	}
 
-	if got, want := err.Error(), `2 error(s) occurred:
+	if got, want := err.Error(), `2 errors occurred:
 old error
 new error`; got != want {
 		t.Errorf("got: %q, want: %q", got, want)
 	}
+}
 
+func TestAppendNil(t *testing.T) {
+	var err error
+	err = Append(err, nil)
+	if err != nil {
+		t.Errorf("should be nil")
+	}
 }
