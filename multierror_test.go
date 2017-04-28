@@ -44,3 +44,24 @@ func TestAppendNil(t *testing.T) {
 		t.Errorf("should be nil")
 	}
 }
+
+func TestAppendNilOnSomething(t *testing.T) {
+	err1 := errors.Errorf("test")
+	errs := err1
+	errs = Append(errs, nil)
+
+	if got, want := errs, err1; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+}
+
+func TestAppendMultiple(t *testing.T) {
+	err1 := errors.Errorf("test")
+	var errs error
+	errs = Append(nil, err1)
+	errs = Append(errs, nil)
+
+	if got, want := errs, err1; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+}

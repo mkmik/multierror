@@ -31,6 +31,9 @@ func Append(err error, errs ...error) error {
 	if err == nil && len(errs) == 1 {
 		return errs[0]
 	}
+	if len(errs) == 1 && errs[0] == nil {
+		return err
+	}
 	if err == nil {
 		return &Error{errs}
 	}
