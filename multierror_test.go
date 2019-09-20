@@ -1,14 +1,13 @@
 package multierror
 
 import (
+	"fmt"
 	"testing"
-
-	"github.com/cesanta/errors"
 )
 
 func TestAppend(t *testing.T) {
 	var err error
-	err = Append(err, errors.Errorf("an error"))
+	err = Append(err, fmt.Errorf("an error"))
 	if err == nil {
 		t.Fatal(err)
 	}
@@ -17,15 +16,15 @@ func TestAppend(t *testing.T) {
 		t.Errorf("got: %q, want: %q", got, want)
 	}
 
-	err = Append(err, errors.Errorf("another error"))
+	err = Append(err, fmt.Errorf("another error"))
 	if got, want := err.Error(), `2 errors occurred:
 an error
 another error`; got != want {
 		t.Errorf("got: %q, want: %q", got, want)
 	}
 
-	err = errors.Errorf("old error")
-	err = Append(err, errors.Errorf("new error"))
+	err = fmt.Errorf("old error")
+	err = Append(err, fmt.Errorf("new error"))
 	if err == nil {
 		t.Fatal(err)
 	}
@@ -46,7 +45,7 @@ func TestAppendNil(t *testing.T) {
 }
 
 func TestAppendNilOnSomething(t *testing.T) {
-	err1 := errors.Errorf("test")
+	err1 := fmt.Errorf("test")
 	errs := err1
 	errs = Append(errs, nil)
 
@@ -56,7 +55,7 @@ func TestAppendNilOnSomething(t *testing.T) {
 }
 
 func TestAppendMultiple(t *testing.T) {
-	err1 := errors.Errorf("test")
+	err1 := fmt.Errorf("test")
 	var errs error
 	errs = Append(nil, err1)
 	errs = Append(errs, nil)
