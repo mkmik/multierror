@@ -66,3 +66,32 @@ func TestAppendMultiple(t *testing.T) {
 		t.Errorf("got: %v, want: %v", got, want)
 	}
 }
+
+func ExampleAppend() {
+	var errs error
+
+	errs = multierror.Append(errs, fmt.Errorf("foo"))
+	errs = multierror.Append(errs, fmt.Errorf("bar"))
+	errs = multierror.Append(errs, fmt.Errorf("baz"))
+
+	fmt.Printf("%v", errs)
+	// Output:
+	// 3 errors occurred:
+	// foo
+	// bar
+	// baz
+}
+
+func ExampleKeyed() {
+	var errs error
+
+	errs = multierror.Append(errs, multierror.Keyed("k1", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Keyed("k2", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Keyed("k3", fmt.Errorf("bar")))
+
+	fmt.Printf("%v", errs)
+	// Output:
+	// 3 errors occurred:
+	// bar (k3)
+	// foo (k1, k2)
+}

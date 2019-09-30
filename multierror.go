@@ -3,6 +3,8 @@ package multierror
 import (
 	"bytes"
 	"fmt"
+	"sort"
+	"strings"
 )
 
 // Error bundles multiple errors and make them obey the error interface
@@ -13,10 +15,29 @@ type Error struct {
 func (e *Error) Error() string {
 	buf := bytes.NewBuffer(nil)
 
+	var keyedErrors map[string][]string
+
 	fmt.Fprintf(buf, "%d errors occurred:", len(e.errs))
 	for _, err := range e.errs {
-		fmt.Fprintf(buf, "\n%v", err)
+		if ke, ok := err.(keyedError); ok {
+			if keyedErrors == nil {
+				keyedErrors = make(map[string][]string)
+			}
+			keyedErrors[ke.Error()] = append(keyedErrors[ke.Error()], ke.key)
+		} else {
+			fmt.Fprintf(buf, "\n%v", err)
+		}
 	}
+
+	var orderedKeyedErrors []string
+	for err := range keyedErrors {
+		orderedKeyedErrors = append(orderedKeyedErrors, err)
+	}
+	sort.Strings(orderedKeyedErrors)
+	for _, err := range orderedKeyedErrors {
+		fmt.Fprintf(buf, "\n%s (%v)", err, strings.Join(keyedErrors[err], ", "))
+	}
+
 	return buf.String()
 }
 
@@ -44,4 +65,15 @@ func Append(err error, errs ...error) error {
 	default:
 		return &Error{append([]error{err}, errs...)}
 	}
+}
+
+type keyedError struct {
+	error
+	key string
+}
+
+// Keyed wraps an error with a key. All errors sharing the same key will be grouped together in one entry
+// of the multierror along with the list of keys.
+func Keyed(key string, err error) error {
+	return keyedError{error: err, key: key}
 }
