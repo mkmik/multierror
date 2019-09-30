@@ -89,7 +89,7 @@ type keyedError struct {
 	key string
 }
 
-// Keyed wraps an error with a key. All errors sharing the same key will be grouped together in one entry
+// Keyed wraps an error with a key. All errors sharing the same error msg will be grouped together in one entry
 // of the multierror along with the list of keys.
 func Keyed(key string, err error) error {
 	return keyedError{error: err, key: key}
