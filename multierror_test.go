@@ -1,13 +1,15 @@
-package multierror
+package multierror_test
 
 import (
 	"fmt"
 	"testing"
+
+	"github.com/mkmik/multierror"
 )
 
 func TestAppend(t *testing.T) {
 	var err error
-	err = Append(err, fmt.Errorf("an error"))
+	err = multierror.Append(err, fmt.Errorf("an error"))
 	if err == nil {
 		t.Fatal(err)
 	}
@@ -16,7 +18,7 @@ func TestAppend(t *testing.T) {
 		t.Errorf("got: %q, want: %q", got, want)
 	}
 
-	err = Append(err, fmt.Errorf("another error"))
+	err = multierror.Append(err, fmt.Errorf("another error"))
 	if got, want := err.Error(), `2 errors occurred:
 an error
 another error`; got != want {
@@ -24,7 +26,7 @@ another error`; got != want {
 	}
 
 	err = fmt.Errorf("old error")
-	err = Append(err, fmt.Errorf("new error"))
+	err = multierror.Append(err, fmt.Errorf("new error"))
 	if err == nil {
 		t.Fatal(err)
 	}
@@ -38,7 +40,7 @@ new error`; got != want {
 
 func TestAppendNil(t *testing.T) {
 	var err error
-	err = Append(err, nil)
+	err = multierror.Append(err, nil)
 	if err != nil {
 		t.Errorf("should be nil")
 	}
@@ -47,7 +49,7 @@ func TestAppendNil(t *testing.T) {
 func TestAppendNilOnSomething(t *testing.T) {
 	err1 := fmt.Errorf("test")
 	errs := err1
-	errs = Append(errs, nil)
+	errs = multierror.Append(errs, nil)
 
 	if got, want := errs, err1; got != want {
 		t.Errorf("got: %v, want: %v", got, want)
@@ -57,8 +59,8 @@ func TestAppendNilOnSomething(t *testing.T) {
 func TestAppendMultiple(t *testing.T) {
 	err1 := fmt.Errorf("test")
 	var errs error
-	errs = Append(nil, err1)
-	errs = Append(errs, nil)
+	errs = multierror.Append(nil, err1)
+	errs = multierror.Append(errs, nil)
 
 	if got, want := errs, err1; got != want {
 		t.Errorf("got: %v, want: %v", got, want)
