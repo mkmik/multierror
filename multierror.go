@@ -9,15 +9,32 @@ import (
 
 // Error bundles multiple errors and make them obey the error interface
 type Error struct {
-	errs []error
+	errs      []error
+	formatter Formatter
+}
+
+// Formatter allows to customize the rendering of the multierror.
+type Formatter func(errs []string) string
+
+var DefaultFormatter = func(errs []string) string {
+	buf := bytes.NewBuffer(nil)
+
+	fmt.Fprintf(buf, "%d errors occurred:", len(errs))
+	for _, line := range errs {
+		fmt.Fprintf(buf, "\n%s", line)
+	}
+
+	return buf.String()
 }
 
 func (e *Error) Error() string {
-	buf := bytes.NewBuffer(nil)
-
+	var f Formatter = DefaultFormatter
+	if e.formatter != nil {
+		f = e.formatter
+	}
+	var lines []string
 	var keyedErrors map[string][]string
 
-	fmt.Fprintf(buf, "%d errors occurred:", len(e.errs))
 	for _, err := range e.errs {
 		if ke, ok := err.(keyedError); ok {
 			if keyedErrors == nil {
@@ -25,7 +42,7 @@ func (e *Error) Error() string {
 			}
 			keyedErrors[ke.Error()] = append(keyedErrors[ke.Error()], ke.key)
 		} else {
-			fmt.Fprintf(buf, "\n%v", err)
+			lines = append(lines, err.Error())
 		}
 	}
 
@@ -35,10 +52,10 @@ func (e *Error) Error() string {
 	}
 	sort.Strings(orderedKeyedErrors)
 	for _, err := range orderedKeyedErrors {
-		fmt.Fprintf(buf, "\n%s (%v)", err, strings.Join(keyedErrors[err], ", "))
+		lines = append(lines, fmt.Sprintf("%s (%v)", err, strings.Join(keyedErrors[err], ", ")))
 	}
 
-	return buf.String()
+	return f(lines)
 }
 
 // Append creates a new mutlierror.Error structure or appends the arguments to an existing multierror
@@ -56,14 +73,14 @@ func Append(err error, errs ...error) error {
 		return err
 	}
 	if err == nil {
-		return &Error{errs}
+		return &Error{errs: errs}
 	}
 	switch err := err.(type) {
 	case *Error:
 		err.errs = append(err.errs, errs...)
 		return err
 	default:
-		return &Error{append([]error{err}, errs...)}
+		return &Error{errs: append([]error{err}, errs...)}
 	}
 }
 
@@ -76,4 +93,15 @@ type keyedError struct {
 // of the multierror along with the list of keys.
 func Keyed(key string, err error) error {
 	return keyedError{error: err, key: key}
+}
+
+// WithFormatter sets a custom formatter if err is a multierror.
+func WithFormatter(err error, f Formatter) error {
+	if me, ok := err.(*Error); ok {
+		cpy := *me
+		cpy.formatter = f
+		return &cpy
+	} else {
+		return err
+	}
 }

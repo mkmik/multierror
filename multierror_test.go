@@ -2,6 +2,7 @@ package multierror_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/mkmik/multierror"
@@ -91,7 +92,23 @@ func ExampleKeyed() {
 
 	fmt.Printf("%v", errs)
 	// Output:
-	// 3 errors occurred:
+	// 2 errors occurred:
 	// bar (k3)
 	// foo (k1, k2)
+}
+
+func ExampleFormatter() {
+	var errs error
+
+	errs = multierror.Append(errs, multierror.Keyed("k1", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Keyed("k2", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Keyed("k3", fmt.Errorf("bar")))
+
+	errs = multierror.WithFormatter(errs, func(errs []string) string {
+		return strings.Join(errs, "; ")
+	})
+
+	fmt.Printf("%v", errs)
+	// Output:
+	// bar (k3); foo (k1, k2)
 }
