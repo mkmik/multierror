@@ -105,6 +105,13 @@ func TestUnfoldSingleton(t *testing.T) {
 	}
 }
 
+func TestUniqEmpty(t *testing.T) {
+	errs := multierror.Uniq(nil)
+	if got, want := errs, []error(nil); got != nil {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+}
+
 func ExampleUniq() {
 	var errs []error
 
