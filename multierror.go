@@ -41,6 +41,21 @@ func (e *Error) Error() string {
 	return f(lines)
 }
 
+// Fold turns a slice of errors into a multierror.
+func Fold(errs []error) error {
+	return &Error{errs: errs}
+}
+
+// Unfold returns the underlying list of errors wrapped in a multierror.
+// If err is not a multierror, then a singleton list is returned.
+func Unfold(err error) []error {
+	if me, ok := err.(*Error); ok {
+		return me.errs
+	} else {
+		return []error{err}
+	}
+}
+
 // Append creates a new mutlierror.Error structure or appends the arguments to an existing multierror
 // err can be nil, or can be a non-multierror error.
 //
@@ -56,24 +71,14 @@ func Append(err error, errs ...error) error {
 		return err
 	}
 	if err == nil {
-		return &Error{errs: errs}
+		return Fold(errs)
 	}
 	switch err := err.(type) {
 	case *Error:
 		err.errs = append(err.errs, errs...)
 		return err
 	default:
-		return &Error{errs: append([]error{err}, errs...)}
-	}
-}
-
-// Unfold returns the underlying list of errors wrapped in a multierror.
-// If err is not a multierror, then a singleton list is returned.
-func Unfold(err error) []error {
-	if me, ok := err.(*Error); ok {
-		return me.errs
-	} else {
-		return []error{err}
+		return Fold(append([]error{err}, errs...))
 	}
 }
 
@@ -171,5 +176,5 @@ func WithFormatter(err error, f Formatter) error {
 
 // WithTransformer applies a transformer to an unfolded multierror and re-wraps the result.
 func WithTransformer(err error, fn func([]error) []error) error {
-	return Append(nil, fn(Unfold(err))...)
+	return Fold(fn(Unfold(err)))
 }
