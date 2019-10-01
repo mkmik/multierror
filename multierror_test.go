@@ -151,8 +151,8 @@ func ExampleFormatter() {
 	errs = multierror.Append(errs, fmt.Errorf("bar"))
 	errs = multierror.Append(errs, fmt.Errorf("foo"))
 
-	errs = multierror.WithTransformer(errs, multierror.Uniq)
-	errs = multierror.WithFormatter(errs, func(errs []string) string {
+	errs = multierror.Transform(errs, multierror.Uniq)
+	errs = multierror.Format(errs, func(errs []string) string {
 		return strings.Join(errs, "; ")
 	})
 
@@ -168,8 +168,8 @@ func ExampleTransformer() {
 	errs = multierror.Append(errs, multierror.Tagged("k2", fmt.Errorf("foo")))
 	errs = multierror.Append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
 
-	errs = multierror.WithTransformer(errs, multierror.Uniq)
-	errs = multierror.WithFormatter(errs, multierror.InlineFormatter)
+	errs = multierror.Transform(errs, multierror.Uniq)
+	errs = multierror.Format(errs, multierror.InlineFormatter)
 
 	fmt.Printf("%v", errs)
 	// Output:
