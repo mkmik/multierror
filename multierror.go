@@ -94,6 +94,32 @@ func Unfold(err error) []error {
 	}
 }
 
+// Uniq deduplicates a list of errors
+func Uniq(errs []error) []error {
+	var ordered []string
+	grouped := map[string][]error{}
+
+	for _, err := range errs {
+		key := err.Error()
+		if _, ok := grouped[key]; !ok {
+			ordered = append(ordered, key)
+		}
+		grouped[key] = append(grouped[key], err)
+	}
+
+	var res []error
+	for _, key := range ordered {
+		group := grouped[key]
+		err := group[0]
+		if n := len(group); n > 1 {
+			err = fmt.Errorf("%w repeated %d times", err, n)
+		}
+		res = append(res, err)
+	}
+
+	return res
+}
+
 type keyedError struct {
 	error
 	key string

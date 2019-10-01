@@ -105,6 +105,18 @@ func TestUnfoldSingleton(t *testing.T) {
 	}
 }
 
+func ExampleUniq() {
+	var errs []error
+
+	errs = append(errs, fmt.Errorf("foo"))
+	errs = append(errs, fmt.Errorf("bar"))
+	errs = append(errs, fmt.Errorf("foo"))
+
+	fmt.Printf("%q", multierror.Uniq(errs))
+	// Output:
+	// ["foo repeated 2 times" "bar"]
+}
+
 func ExampleKeyed() {
 	var errs error
 
