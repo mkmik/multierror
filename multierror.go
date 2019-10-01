@@ -2,9 +2,9 @@ package multierror
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strings"
-	"errors"
 )
 
 // Error bundles multiple errors and make them obey the error interface
@@ -135,27 +135,27 @@ func TaggedError(err error) (string, string) {
 }
 
 type taggedError struct {
+	tag string
 	err error
-	key string
 }
 
 // Tagged wraps an error with a tag. The resulting error implements the TaggableError interface
 // and thus the tags can be unwrapped by Uniq in order to deduplicate error messages without loosing
 // context.
-func Tagged(key string, err error) error {
-	return taggedError{err: err, key: key}
+func Tagged(tag string, err error) error {
+	return taggedError{tag: tag, err: err}
 }
 
-func (k taggedError) Error() string {
-	return fmt.Sprintf("%s (%s)", k.err.Error(), k.key)
+func (t taggedError) Error() string {
+	return fmt.Sprintf("%s (%s)", t.err.Error(), t.tag)
 }
 
-func (k taggedError) Unwrap() error {
-	return k.err
+func (t taggedError) Unwrap() error {
+	return t.err
 }
 
-func (k taggedError) TaggedError() (string, string) {
-	return k.err.Error(), k.key
+func (t taggedError) TaggedError() (string, string) {
+	return t.err.Error(), t.tag
 }
 
 // WithFormatter sets a custom formatter if err is a multierror.
