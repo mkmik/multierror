@@ -1,4 +1,8 @@
+// +build !go1.13
+
 package multierror
+
+import "fmt"
 
 // unwrap returns the result of calling the Unwrap method on err, if err's
 // type contains an Unwrap method returning error.
@@ -14,4 +18,8 @@ func unwrap(err error) error {
 		return nil
 	}
 	return u.Unwrap()
+}
+
+func errorSuffix(format string, err error, a ...interface{}) error {
+	return fmt.Errorf(fmt.Sprintf("%v %s", err, format), a...)
 }
