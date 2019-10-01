@@ -2,7 +2,6 @@ package multierror
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -113,7 +112,7 @@ func Uniq(errs []error) []error {
 				_, tag := TaggedError(e)
 				tags = append(tags, tag)
 			}
-			err = fmt.Errorf("%w (%s)", errors.Unwrap(err), strings.Join(tags, ", "))
+			err = fmt.Errorf("%w (%s)", unwrap(err), strings.Join(tags, ", "))
 		} else {
 			if n := len(group); n > 1 {
 				err = fmt.Errorf("%w repeated %d times", err, n)
