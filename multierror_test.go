@@ -131,6 +131,18 @@ func ExampleKeyed() {
 	// foo (k1, k2)
 }
 
+func ExampleKeyed_uniq() {
+	var errs []error
+
+	errs = append(errs, multierror.Keyed("k1", fmt.Errorf("foo")))
+	errs = append(errs, multierror.Keyed("k2", fmt.Errorf("foo")))
+	errs = append(errs, multierror.Keyed("k3", fmt.Errorf("bar")))
+
+	fmt.Printf("%q", multierror.Uniq(errs))
+	// Output:
+	// ["foo (k1, k2)" "bar (k3)"]
+}
+
 func ExampleFormatter() {
 	var errs error
 

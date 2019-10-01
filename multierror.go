@@ -96,11 +96,19 @@ func Unfold(err error) []error {
 
 // Uniq deduplicates a list of errors
 func Uniq(errs []error) []error {
-	var ordered []string
-	grouped := map[string][]error{}
+	type groupingKey struct {
+		msg    string
+		tagged bool
+	}
+	var ordered []groupingKey
+	grouped := map[groupingKey][]error{}
 
 	for _, err := range errs {
-		key := err.Error()
+		msg, tag := TaggedError(err)
+		key := groupingKey{
+			msg:    msg,
+			tagged: tag != "",
+		}
 		if _, ok := grouped[key]; !ok {
 			ordered = append(ordered, key)
 		}
@@ -111,13 +119,36 @@ func Uniq(errs []error) []error {
 	for _, key := range ordered {
 		group := grouped[key]
 		err := group[0]
-		if n := len(group); n > 1 {
-			err = fmt.Errorf("%w repeated %d times", err, n)
+		if key.tagged {
+			var tags []string
+			for _, e := range group {
+				_, tag := TaggedError(e)
+				tags = append(tags, tag)
+			}
+			err = fmt.Errorf("%w (%s)", err, strings.Join(tags, ", "))
+		} else {
+			if n := len(group); n > 1 {
+				err = fmt.Errorf("%w repeated %d times", err, n)
+			}
 		}
 		res = append(res, err)
 	}
 
 	return res
+}
+
+type Tagged interface {
+	// TaggedError is like Error() but splits the error from the tag.
+	TaggedError() (string, string)
+}
+
+// TaggedError is like Error() but if err implements TaggedError, it will
+// invoke TaggeddError() and return error message and the tag. Otherwise the tag will be empty.
+func TaggedError(err error) (string, string) {
+	if te, ok := err.(Tagged); ok {
+		return te.TaggedError()
+	}
+	return err.Error(), ""
 }
 
 type keyedError struct {
@@ -129,6 +160,14 @@ type keyedError struct {
 // of the multierror along with the list of keys.
 func Keyed(key string, err error) error {
 	return keyedError{error: err, key: key}
+}
+
+func (k keyedError) Unwrap() error {
+	return k.error
+}
+
+func (k keyedError) TaggedError() (string, string) {
+	return k.Error(), k.key
 }
 
 // WithFormatter sets a custom formatter if err is a multierror.
