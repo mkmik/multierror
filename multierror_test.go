@@ -117,12 +117,12 @@ func ExampleUniq() {
 	// ["foo repeated 2 times" "bar"]
 }
 
-func ExampleTagged() {
+func ExampleTag() {
 	var errs error
 
-	errs = multierror.Append(errs, multierror.Tagged("k1", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Tagged("k2", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
+	errs = multierror.Append(errs, multierror.Tag("k1", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Tag("k2", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Tag("k3", fmt.Errorf("bar")))
 
 	fmt.Printf("%v", errs)
 	// Output:
@@ -132,12 +132,12 @@ func ExampleTagged() {
 	// bar (k3)
 }
 
-func ExampleTagged_uniq() {
+func ExampleTag_uniq() {
 	var errs []error
 
-	errs = append(errs, multierror.Tagged("k1", fmt.Errorf("foo")))
-	errs = append(errs, multierror.Tagged("k2", fmt.Errorf("foo")))
-	errs = append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
+	errs = append(errs, multierror.Tag("k1", fmt.Errorf("foo")))
+	errs = append(errs, multierror.Tag("k2", fmt.Errorf("foo")))
+	errs = append(errs, multierror.Tag("k3", fmt.Errorf("bar")))
 
 	fmt.Printf("%q", multierror.Uniq(errs))
 	// Output:
@@ -164,9 +164,9 @@ func ExampleFormatter() {
 func ExampleTransformer() {
 	var errs error
 
-	errs = multierror.Append(errs, multierror.Tagged("k1", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Tagged("k2", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
+	errs = multierror.Append(errs, multierror.Tag("k1", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Tag("k2", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Tag("k3", fmt.Errorf("bar")))
 
 	errs = multierror.Transform(errs, multierror.Uniq)
 	errs = multierror.Format(errs, multierror.InlineFormatter)

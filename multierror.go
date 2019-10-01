@@ -144,10 +144,10 @@ type taggedError struct {
 	err error
 }
 
-// Tagged wraps an error with a tag. The resulting error implements the TaggableError interface
+// Tag wraps an error with a tag. The resulting error implements the TaggableError interface
 // and thus the tags can be unwrapped by Uniq in order to deduplicate error messages without loosing
 // context.
-func Tagged(tag string, err error) error {
+func Tag(tag string, err error) error {
 	return taggedError{tag: tag, err: err}
 }
 
