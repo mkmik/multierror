@@ -12,6 +12,6 @@ func unwrap(err error) error {
 	return errors.Unwrap(err)
 }
 
-func errorSuffix(format string, err error, a ...interface{}) error {
-	return fmt.Errorf(fmt.Sprintf("%w %s", err, format), a...)
+func errorSuffix(err error, format string, a ...interface{}) error {
+	return fmt.Errorf("%w %s", err, fmt.Sprintf(format, a...))
 }
