@@ -169,9 +169,7 @@ func ExampleTransformer() {
 	errs = multierror.Append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
 
 	errs = multierror.WithTransformer(errs, multierror.Uniq)
-	errs = multierror.WithFormatter(errs, func(errs []string) string {
-		return strings.Join(errs, "; ")
-	})
+	errs = multierror.WithFormatter(errs, multierror.InlineFormatter)
 
 	fmt.Printf("%v", errs)
 	// Output:

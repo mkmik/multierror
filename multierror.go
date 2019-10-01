@@ -174,6 +174,11 @@ func WithFormatter(err error, f Formatter) error {
 	}
 }
 
+// InlineFormatter formats all errors in a single line.
+func InlineFormatter(errs []string) string {
+	return strings.Join(errs, "; ")
+}
+
 // WithTransformer applies a transformer to an unfolded multierror and re-wraps the result.
 func WithTransformer(err error, fn func([]error) []error) error {
 	return Fold(fn(Unfold(err)))
