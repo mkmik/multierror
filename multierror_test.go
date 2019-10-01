@@ -147,12 +147,28 @@ func ExampleTagged_uniq() {
 func ExampleFormatter() {
 	var errs error
 
+	errs = multierror.Append(errs, fmt.Errorf("foo"))
+	errs = multierror.Append(errs, fmt.Errorf("bar"))
+	errs = multierror.Append(errs, fmt.Errorf("foo"))
+
+	errs = multierror.WithTransformer(errs, multierror.Uniq)
+	errs = multierror.WithFormatter(errs, func(errs []string) string {
+		return strings.Join(errs, "; ")
+	})
+
+	fmt.Printf("%v", errs)
+	// Output:
+	// foo repeated 2 times; bar
+}
+
+func ExampleTransformer() {
+	var errs error
+
 	errs = multierror.Append(errs, multierror.Tagged("k1", fmt.Errorf("foo")))
 	errs = multierror.Append(errs, multierror.Tagged("k2", fmt.Errorf("foo")))
 	errs = multierror.Append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
 
-	errs = multierror.Append(nil, multierror.Uniq(multierror.Unfold(errs))...)
-
+	errs = multierror.WithTransformer(errs, multierror.Uniq)
 	errs = multierror.WithFormatter(errs, func(errs []string) string {
 		return strings.Join(errs, "; ")
 	})

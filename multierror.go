@@ -168,3 +168,8 @@ func WithFormatter(err error, f Formatter) error {
 		return err
 	}
 }
+
+// WithTransformer applies a transformer to an unfolded multierror and re-wraps the result.
+func WithTransformer(err error, fn func([]error) []error) error {
+	return Append(nil, fn(Unfold(err))...)
+}
