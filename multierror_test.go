@@ -117,12 +117,12 @@ func ExampleUniq() {
 	// ["foo repeated 2 times" "bar"]
 }
 
-func ExampleKeyed() {
+func ExampleTagged() {
 	var errs error
 
-	errs = multierror.Append(errs, multierror.Keyed("k1", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Keyed("k2", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Keyed("k3", fmt.Errorf("bar")))
+	errs = multierror.Append(errs, multierror.Tagged("k1", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Tagged("k2", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
 
 	fmt.Printf("%v", errs)
 	// Output:
@@ -131,12 +131,12 @@ func ExampleKeyed() {
 	// foo (k1, k2)
 }
 
-func ExampleKeyed_uniq() {
+func ExampleTagged_uniq() {
 	var errs []error
 
-	errs = append(errs, multierror.Keyed("k1", fmt.Errorf("foo")))
-	errs = append(errs, multierror.Keyed("k2", fmt.Errorf("foo")))
-	errs = append(errs, multierror.Keyed("k3", fmt.Errorf("bar")))
+	errs = append(errs, multierror.Tagged("k1", fmt.Errorf("foo")))
+	errs = append(errs, multierror.Tagged("k2", fmt.Errorf("foo")))
+	errs = append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
 
 	fmt.Printf("%q", multierror.Uniq(errs))
 	// Output:
@@ -146,9 +146,9 @@ func ExampleKeyed_uniq() {
 func ExampleFormatter() {
 	var errs error
 
-	errs = multierror.Append(errs, multierror.Keyed("k1", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Keyed("k2", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Keyed("k3", fmt.Errorf("bar")))
+	errs = multierror.Append(errs, multierror.Tagged("k1", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Tagged("k2", fmt.Errorf("foo")))
+	errs = multierror.Append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
 
 	errs = multierror.WithFormatter(errs, func(errs []string) string {
 		return strings.Join(errs, "; ")

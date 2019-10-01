@@ -33,26 +33,26 @@ func (e *Error) Error() string {
 		f = e.formatter
 	}
 	var lines []string
-	var keyedErrors map[string][]string
+	var taggedErrors map[string][]string
 
 	for _, err := range e.errs {
-		if ke, ok := err.(keyedError); ok {
-			if keyedErrors == nil {
-				keyedErrors = make(map[string][]string)
+		if ke, ok := err.(taggedError); ok {
+			if taggedErrors == nil {
+				taggedErrors = make(map[string][]string)
 			}
-			keyedErrors[ke.Error()] = append(keyedErrors[ke.Error()], ke.key)
+			taggedErrors[ke.Error()] = append(taggedErrors[ke.Error()], ke.key)
 		} else {
 			lines = append(lines, err.Error())
 		}
 	}
 
 	var orderedKeyedErrors []string
-	for err := range keyedErrors {
+	for err := range taggedErrors {
 		orderedKeyedErrors = append(orderedKeyedErrors, err)
 	}
 	sort.Strings(orderedKeyedErrors)
 	for _, err := range orderedKeyedErrors {
-		lines = append(lines, fmt.Sprintf("%s (%v)", err, strings.Join(keyedErrors[err], ", ")))
+		lines = append(lines, fmt.Sprintf("%s (%v)", err, strings.Join(taggedErrors[err], ", ")))
 	}
 
 	return f(lines)
@@ -137,7 +137,7 @@ func Uniq(errs []error) []error {
 	return res
 }
 
-type Tagged interface {
+type TaggableError interface {
 	// TaggedError is like Error() but splits the error from the tag.
 	TaggedError() (string, string)
 }
@@ -145,28 +145,28 @@ type Tagged interface {
 // TaggedError is like Error() but if err implements TaggedError, it will
 // invoke TaggeddError() and return error message and the tag. Otherwise the tag will be empty.
 func TaggedError(err error) (string, string) {
-	if te, ok := err.(Tagged); ok {
+	if te, ok := err.(TaggableError); ok {
 		return te.TaggedError()
 	}
 	return err.Error(), ""
 }
 
-type keyedError struct {
+type taggedError struct {
 	error
 	key string
 }
 
-// Keyed wraps an error with a key. All errors sharing the same error msg will be grouped together in one entry
-// of the multierror along with the list of keys.
-func Keyed(key string, err error) error {
-	return keyedError{error: err, key: key}
+// Tagged wraps an error with a tag. All errors sharing the same error msg will be grouped together in one entry
+// of the multierror along with the list of tags.
+func Tagged(key string, err error) error {
+	return taggedError{error: err, key: key}
 }
 
-func (k keyedError) Unwrap() error {
+func (k taggedError) Unwrap() error {
 	return k.error
 }
 
-func (k keyedError) TaggedError() (string, string) {
+func (k taggedError) TaggedError() (string, string) {
 	return k.Error(), k.key
 }
 
