@@ -83,6 +83,28 @@ func ExampleAppend() {
 	// baz
 }
 
+func ExampleUnfold() {
+	var errs error
+
+	errs = multierror.Append(errs, fmt.Errorf("foo"))
+	errs = multierror.Append(errs, fmt.Errorf("bar"))
+	errs = multierror.Append(errs, fmt.Errorf("baz"))
+
+	fmt.Printf("%q", multierror.Unfold(errs))
+	// Output:
+	// ["foo" "bar" "baz"]
+}
+
+func TestUnfoldSingleton(t *testing.T) {
+	errs := multierror.Unfold(fmt.Errorf("foo"))
+	if got, want := len(errs), 1; got != want {
+		t.Fatalf("got: %d, want: %d", got, want)
+	}
+	if got, want := errs[0].Error(), "foo"; got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
+	}
+}
+
 func ExampleKeyed() {
 	var errs error
 
