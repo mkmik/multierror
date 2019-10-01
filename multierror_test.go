@@ -126,9 +126,10 @@ func ExampleTagged() {
 
 	fmt.Printf("%v", errs)
 	// Output:
-	// 2 errors occurred:
+	// 3 errors occurred:
+	// foo (k1)
+	// foo (k2)
 	// bar (k3)
-	// foo (k1, k2)
 }
 
 func ExampleTagged_uniq() {
@@ -150,11 +151,13 @@ func ExampleFormatter() {
 	errs = multierror.Append(errs, multierror.Tagged("k2", fmt.Errorf("foo")))
 	errs = multierror.Append(errs, multierror.Tagged("k3", fmt.Errorf("bar")))
 
+	errs = multierror.Append(nil, multierror.Uniq(multierror.Unfold(errs))...)
+
 	errs = multierror.WithFormatter(errs, func(errs []string) string {
 		return strings.Join(errs, "; ")
 	})
 
 	fmt.Printf("%v", errs)
 	// Output:
-	// bar (k3); foo (k1, k2)
+	// foo (k1, k2); bar (k3)
 }

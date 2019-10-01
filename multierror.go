@@ -3,8 +3,8 @@ package multierror
 import (
 	"bytes"
 	"fmt"
-	"sort"
 	"strings"
+	"errors"
 )
 
 // Error bundles multiple errors and make them obey the error interface
@@ -32,27 +32,10 @@ func (e *Error) Error() string {
 	if e.formatter != nil {
 		f = e.formatter
 	}
+
 	var lines []string
-	var taggedErrors map[string][]string
-
 	for _, err := range e.errs {
-		if ke, ok := err.(taggedError); ok {
-			if taggedErrors == nil {
-				taggedErrors = make(map[string][]string)
-			}
-			taggedErrors[ke.Error()] = append(taggedErrors[ke.Error()], ke.key)
-		} else {
-			lines = append(lines, err.Error())
-		}
-	}
-
-	var orderedKeyedErrors []string
-	for err := range taggedErrors {
-		orderedKeyedErrors = append(orderedKeyedErrors, err)
-	}
-	sort.Strings(orderedKeyedErrors)
-	for _, err := range orderedKeyedErrors {
-		lines = append(lines, fmt.Sprintf("%s (%v)", err, strings.Join(taggedErrors[err], ", ")))
+		lines = append(lines, err.Error())
 	}
 
 	return f(lines)
@@ -125,7 +108,7 @@ func Uniq(errs []error) []error {
 				_, tag := TaggedError(e)
 				tags = append(tags, tag)
 			}
-			err = fmt.Errorf("%w (%s)", err, strings.Join(tags, ", "))
+			err = fmt.Errorf("%w (%s)", errors.Unwrap(err), strings.Join(tags, ", "))
 		} else {
 			if n := len(group); n > 1 {
 				err = fmt.Errorf("%w repeated %d times", err, n)
@@ -152,22 +135,27 @@ func TaggedError(err error) (string, string) {
 }
 
 type taggedError struct {
-	error
+	err error
 	key string
 }
 
-// Tagged wraps an error with a tag. All errors sharing the same error msg will be grouped together in one entry
-// of the multierror along with the list of tags.
+// Tagged wraps an error with a tag. The resulting error implements the TaggableError interface
+// and thus the tags can be unwrapped by Uniq in order to deduplicate error messages without loosing
+// context.
 func Tagged(key string, err error) error {
-	return taggedError{error: err, key: key}
+	return taggedError{err: err, key: key}
+}
+
+func (k taggedError) Error() string {
+	return fmt.Sprintf("%s (%s)", k.err.Error(), k.key)
 }
 
 func (k taggedError) Unwrap() error {
-	return k.error
+	return k.err
 }
 
 func (k taggedError) TaggedError() (string, string) {
-	return k.Error(), k.key
+	return k.err.Error(), k.key
 }
 
 // WithFormatter sets a custom formatter if err is a multierror.
