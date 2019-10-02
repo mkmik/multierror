@@ -209,7 +209,7 @@ func Format(err error, f Formatter) error {
 	}
 }
 
-// InlineFormatter formats all errors in
+// InlineFormatter formats all errors in a single line.
 func InlineFormatter(errs []string) string {
 	return strings.Join(errs, "; ")
 }
