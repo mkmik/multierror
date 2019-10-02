@@ -40,9 +40,30 @@ func (e *Error) Error() string {
 	return f(lines)
 }
 
+type JoinOption func(*joinOptions)
+type joinOptions struct {
+	formatter   Formatter
+	transformer func([]error) []error
+}
+
+func WithFormatter(f Formatter) JoinOption {
+	return func(o *joinOptions) { o.formatter = f }
+}
+
+func WithTransformer(t func([]error) []error) JoinOption {
+	return func(o *joinOptions) { o.transformer = t }
+}
+
 // Join turns a slice of errors into a multierror.
-func Join(errs []error) error {
-	return &Error{errs: errs}
+func Join(errs []error, opts ...JoinOption) error {
+	var o joinOptions
+	for _, opt := range opts {
+		opt(&o)
+	}
+	if o.transformer != nil {
+	errs = o.transformer(errs)
+	}
+	return &Error{errs: errs, formatter: o.formatter}
 }
 
 // Fold is deprecated, use Join instead.

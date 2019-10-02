@@ -76,11 +76,58 @@ func ExampleAppend() {
 	errs = multierror.Append(errs, fmt.Errorf("baz"))
 
 	fmt.Printf("%v", errs)
+
 	// Output:
 	// 3 errors occurred:
 	// foo
 	// bar
 	// baz
+}
+
+func ExampleJoin() {
+	var errs []error
+
+	errs = append(errs, fmt.Errorf("foo"))
+	errs = append(errs, fmt.Errorf("bar"))
+	errs = append(errs, fmt.Errorf("foo"))
+
+	err := multierror.Join(errs)
+	fmt.Printf("%v", err)
+
+	// Output:
+	// 3 errors occurred:
+	// foo
+	// bar
+	// foo
+}
+
+func ExampleJoin_Formatter() {
+	var errs []error
+
+	errs = append(errs, fmt.Errorf("foo"))
+	errs = append(errs, fmt.Errorf("bar"))
+	errs = append(errs, fmt.Errorf("foo"))
+
+	err := multierror.Join(errs, multierror.WithFormatter(multierror.InlineFormatter))
+	fmt.Printf("%v", err)
+	// Output:
+	// foo; bar; foo
+}
+
+func ExampleJoin_Transformer() {
+	var errs []error
+
+	errs = append(errs, fmt.Errorf("foo"))
+	errs = append(errs, fmt.Errorf("bar"))
+	errs = append(errs, fmt.Errorf("foo"))
+
+	err := multierror.Join(errs, multierror.WithTransformer(multierror.Uniq))
+	fmt.Printf("%v", err)
+
+	// Output:
+	// 2 errors occurred:
+	// foo repeated 2 times
+	// bar
 }
 
 func ExampleSplit() {
@@ -120,6 +167,7 @@ func ExampleUniq() {
 	errs = append(errs, fmt.Errorf("foo"))
 
 	fmt.Printf("%q", multierror.Uniq(errs))
+
 	// Output:
 	// ["foo repeated 2 times" "bar"]
 }
@@ -132,6 +180,7 @@ func ExampleTag() {
 	err = multierror.Append(err, multierror.Tag("k3", fmt.Errorf("bar")))
 
 	fmt.Printf("%v", err)
+
 	// Output:
 	// 3 errors occurred:
 	// foo (k1)
@@ -147,6 +196,7 @@ func ExampleTag_uniq() {
 	errs = append(errs, multierror.Tag("k3", fmt.Errorf("bar")))
 
 	fmt.Printf("%q", multierror.Uniq(errs))
+
 	// Output:
 	// ["foo (k1, k2)" "bar (k3)"]
 }
@@ -164,6 +214,7 @@ func ExampleFormatter() {
 	})
 
 	fmt.Printf("%v", err)
+
 	// Output:
 	// foo repeated 2 times; bar
 }
@@ -179,6 +230,7 @@ func ExampleTransformer() {
 	err = multierror.Format(err, multierror.InlineFormatter)
 
 	fmt.Printf("%v", err)
+
 	// Output:
 	// foo (k1, k2); bar (k3)
 }
