@@ -61,7 +61,7 @@ func Join(errs []error, opts ...JoinOption) error {
 		opt(&o)
 	}
 	if o.transformer != nil {
-	errs = o.transformer(errs)
+		errs = o.transformer(errs)
 	}
 	return &Error{errs: errs, formatter: o.formatter}
 }
