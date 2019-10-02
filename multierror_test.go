@@ -59,11 +59,11 @@ func TestAppendNilOnSomething(t *testing.T) {
 
 func TestAppendMultiple(t *testing.T) {
 	err1 := fmt.Errorf("test")
-	var errs error
-	errs = multierror.Append(nil, err1)
-	errs = multierror.Append(errs, nil)
+	var err error
+	err = multierror.Append(nil, err1)
+	err = multierror.Append(err, nil)
 
-	if got, want := errs, err1; got != want {
+	if got, want := err, err1; got != want {
 		t.Errorf("got: %v, want: %v", got, want)
 	}
 }
@@ -83,20 +83,20 @@ func ExampleAppend() {
 	// baz
 }
 
-func ExampleUnfold() {
-	var errs error
+func ExampleSplit() {
+	var err error
 
-	errs = multierror.Append(errs, fmt.Errorf("foo"))
-	errs = multierror.Append(errs, fmt.Errorf("bar"))
-	errs = multierror.Append(errs, fmt.Errorf("baz"))
+	err = multierror.Append(err, fmt.Errorf("foo"))
+	err = multierror.Append(err, fmt.Errorf("bar"))
+	err = multierror.Append(err, fmt.Errorf("baz"))
 
-	fmt.Printf("%q", multierror.Unfold(errs))
+	fmt.Printf("%q", multierror.Split(err))
 	// Output:
 	// ["foo" "bar" "baz"]
 }
 
-func TestUnfoldSingleton(t *testing.T) {
-	errs := multierror.Unfold(fmt.Errorf("foo"))
+func TestSplitSingleton(t *testing.T) {
+	errs := multierror.Split(fmt.Errorf("foo"))
 	if got, want := len(errs), 1; got != want {
 		t.Fatalf("got: %d, want: %d", got, want)
 	}
@@ -125,13 +125,13 @@ func ExampleUniq() {
 }
 
 func ExampleTag() {
-	var errs error
+	var err error
 
-	errs = multierror.Append(errs, multierror.Tag("k1", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Tag("k2", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Tag("k3", fmt.Errorf("bar")))
+	err = multierror.Append(err, multierror.Tag("k1", fmt.Errorf("foo")))
+	err = multierror.Append(err, multierror.Tag("k2", fmt.Errorf("foo")))
+	err = multierror.Append(err, multierror.Tag("k3", fmt.Errorf("bar")))
 
-	fmt.Printf("%v", errs)
+	fmt.Printf("%v", err)
 	// Output:
 	// 3 errors occurred:
 	// foo (k1)
@@ -152,33 +152,33 @@ func ExampleTag_uniq() {
 }
 
 func ExampleFormatter() {
-	var errs error
+	var err error
 
-	errs = multierror.Append(errs, fmt.Errorf("foo"))
-	errs = multierror.Append(errs, fmt.Errorf("bar"))
-	errs = multierror.Append(errs, fmt.Errorf("foo"))
+	err = multierror.Append(err, fmt.Errorf("foo"))
+	err = multierror.Append(err, fmt.Errorf("bar"))
+	err = multierror.Append(err, fmt.Errorf("foo"))
 
-	errs = multierror.Transform(errs, multierror.Uniq)
-	errs = multierror.Format(errs, func(errs []string) string {
+	err = multierror.Transform(err, multierror.Uniq)
+	err = multierror.Format(err, func(errs []string) string {
 		return strings.Join(errs, "; ")
 	})
 
-	fmt.Printf("%v", errs)
+	fmt.Printf("%v", err)
 	// Output:
 	// foo repeated 2 times; bar
 }
 
 func ExampleTransformer() {
-	var errs error
+	var err error
 
-	errs = multierror.Append(errs, multierror.Tag("k1", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Tag("k2", fmt.Errorf("foo")))
-	errs = multierror.Append(errs, multierror.Tag("k3", fmt.Errorf("bar")))
+	err = multierror.Append(err, multierror.Tag("k1", fmt.Errorf("foo")))
+	err = multierror.Append(err, multierror.Tag("k2", fmt.Errorf("foo")))
+	err = multierror.Append(err, multierror.Tag("k3", fmt.Errorf("bar")))
 
-	errs = multierror.Transform(errs, multierror.Uniq)
-	errs = multierror.Format(errs, multierror.InlineFormatter)
+	err = multierror.Transform(err, multierror.Uniq)
+	err = multierror.Format(err, multierror.InlineFormatter)
 
-	fmt.Printf("%v", errs)
+	fmt.Printf("%v", err)
 	// Output:
 	// foo (k1, k2); bar (k3)
 }
