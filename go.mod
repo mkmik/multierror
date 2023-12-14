@@ -1,3 +1,3 @@
 module github.com/mkmik/multierror
 
-go 1.12
+go 1.21
