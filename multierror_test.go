@@ -47,6 +47,30 @@ func TestAppendNil(t *testing.T) {
 	}
 }
 
+func TestAppendNil2(t *testing.T) {
+	err := fmt.Errorf("foo")
+	nerr := multierror.Append(nil, err)
+	if got, want := nerr, err; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+}
+
+func TestAppendNil3(t *testing.T) {
+	err1 := fmt.Errorf("foo1")
+	err2 := fmt.Errorf("foo2")
+	nerr := multierror.Append(nil, err1, err2)
+	serr := multierror.Split(nerr)
+	if got, want := len(serr), 2; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+	if got, want := serr[0], err1; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+	if got, want := serr[1], err2; got != want {
+		t.Errorf("got: %v, want: %v", got, want)
+	}
+}
+
 func TestAppendNilOnSomething(t *testing.T) {
 	err1 := fmt.Errorf("test")
 	errs := err1
@@ -152,6 +176,16 @@ func TestSplitSingleton(t *testing.T) {
 	}
 }
 
+func TestUnfoldSingleton(t *testing.T) {
+	errs := multierror.Unfold(fmt.Errorf("foo"))
+	if got, want := len(errs), 1; got != want {
+		t.Fatalf("got: %d, want: %d", got, want)
+	}
+	if got, want := errs[0].Error(), "foo"; got != want {
+		t.Fatalf("got: %q, want: %q", got, want)
+	}
+}
+
 func TestUniqEmpty(t *testing.T) {
 	errs := multierror.Uniq(nil)
 	if got, want := errs, []error(nil); got != nil {
@@ -233,4 +267,14 @@ func ExampleTransformer() {
 
 	// Output:
 	// foo (k1, k2); bar (k3)
+}
+
+func TestFormatLegacyError(t *testing.T) {
+	err := fmt.Errorf("foo")
+	formatted := multierror.Format(err, func(errs []string) string {
+		return strings.Join(errs, "; ")
+	})
+	if got, want := err, formatted; got != want {
+		t.Fatalf("got %v, wanted: %v", got, want)
+	}
 }

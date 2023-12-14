@@ -1,3 +1,9 @@
+// The multierror package provides useful helpers to handle multiple errors wrapped together.
+//
+// This package predates the errors.Join feature available in the stdlib since 1.20.
+// For backwards compatibility I left the functionality that overlaps with the stdlib but marked is a depreacted.
+//
+// This package offers a few interesting functions that help with joined errors, namely formatters and grouping.
 package multierror
 
 import (
@@ -54,6 +60,8 @@ func WithTransformer(t func([]error) []error) JoinOption {
 	return func(o *joinOptions) { o.transformer = t }
 }
 
+// Deprecated: Join is deprecated. Use errors.Join
+//
 // Join turns a slice of errors into a multierror.
 func Join(errs []error, opts ...JoinOption) error {
 	var o joinOptions
@@ -66,24 +74,14 @@ func Join(errs []error, opts ...JoinOption) error {
 	return &Error{errs: errs, formatter: o.formatter}
 }
 
-// Fold is deprecated, use Join instead.
+// deprecated: Fold is deprecated, use Join instead.
 //
 // Fold turns a slice of errors into a multierror.
 func Fold(errs []error) error {
 	return Join(errs)
 }
 
-// Split returns the underlying list of errors wrapped in a multierror.
-// If err is not a multierror, then a singleton list is returned.
-func Split(err error) []error {
-	if me, ok := err.(*Error); ok {
-		return me.errs
-	} else {
-		return []error{err}
-	}
-}
-
-// Unfold is deprecated, use Split instead.
+// Deprecated: Unfold is deprecated, use Split instead.
 //
 // Unfold returns the underlying list of errors wrapped in a multierror.
 // If err is not a multierror, then a singleton list is returned.
@@ -91,6 +89,8 @@ func Unfold(err error) []error {
 	return Split(err)
 }
 
+// Deprecated: Append is deprecated. Use errors.Join instead
+//
 // Append creates a new mutlierror.Error structure or appends the arguments to an existing multierror
 // err can be nil, or can be a non-multierror error.
 //
@@ -106,14 +106,14 @@ func Append(err error, errs ...error) error {
 		return err
 	}
 	if err == nil {
-		return Fold(errs)
+		return Join(errs)
 	}
 	switch err := err.(type) {
 	case *Error:
 		err.errs = append(err.errs, errs...)
 		return err
 	default:
-		return Fold(append([]error{err}, errs...))
+		return Join(append([]error{err}, errs...))
 	}
 }
 
@@ -216,5 +216,5 @@ func InlineFormatter(errs []string) string {
 
 // Transform applies a transformer to an unfolded multierror and re-wraps the result.
 func Transform(err error, fn func([]error) []error) error {
-	return Fold(fn(Unfold(err)))
+	return Join(fn(Split(err)))
 }
